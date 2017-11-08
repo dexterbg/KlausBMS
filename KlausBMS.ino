@@ -26,7 +26,7 @@
  *  
  */
 
-#define KLAUS_BMS_VERSION    "V0.9.0 (2017-11-08)"
+#define KLAUS_BMS_VERSION    "V0.9.1 (2017-11-08)"
 
 #include <EEPROM.h>
 #include <util/crc16.h>
