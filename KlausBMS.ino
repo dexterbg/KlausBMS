@@ -1065,11 +1065,11 @@ public:
         float dt = 20 - min(temp_f, temp_r);
         float dy;
         dy = (max_drive_power - max_drive_power_0c) / 20;
-        drvpwr -= dt * dy;
+        drvpwr = max(drvpwr - dt * dy, 0);
         dy = (max_recup_power - max_recup_power_0c) / 20;
-        recpwr -= dt * dy;
+        recpwr = max(recpwr - dt * dy, 0);
         dy = (max_charge_current - max_charge_current_0c) / 20;
-        chgcur -= dt * dy;
+        chgcur = max(chgcur - dt * dy, 5);
       }
       
     #endif // CALIBRATION_MODE
