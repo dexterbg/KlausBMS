@@ -26,7 +26,7 @@
  *  
  */
 
-#define KLAUS_BMS_VERSION    "V0.9.1 (2017-11-08)"
+#define KLAUS_BMS_VERSION    "V0.9.2 (2017-11-08)"
 
 #include <EEPROM.h>
 #include <util/crc16.h>
@@ -1068,8 +1068,10 @@ public:
         drvpwr = max(drvpwr - dt * dy, 0);
         dy = (max_recup_power - max_recup_power_0c) / 20;
         recpwr = max(recpwr - dt * dy, 0);
-        dy = (max_charge_current - max_charge_current_0c) / 20;
-        chgcur = max(chgcur - dt * dy, 5);
+        if (chgcur != 0) {
+          dy = (max_charge_current - max_charge_current_0c) / 20;
+          chgcur = max(chgcur - dt * dy, 5);
+        }
       }
       
     #endif // CALIBRATION_MODE
