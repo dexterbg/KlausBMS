@@ -26,7 +26,7 @@
  *  
  */
 
-#define KLAUS_BMS_VERSION    "V0.8.4 (2017-10-20)"
+#define KLAUS_BMS_VERSION    "V0.9.0 (2017-11-08)"
 
 #include <EEPROM.h>
 #include <util/crc16.h>
@@ -133,12 +133,19 @@ public:
   // Configuration variables
   // 
   
-  // Maximum charge current to use [A]:
+  // Maximum charge current to use [A]
+  // …at 20 °C & higher:
   byte max_charge_current;
+  // …at zero °C:
+  byte max_charge_current_0c;
 
-  // Maximum driving & recuperation power limits to use [W]:
+  // Maximum driving & recuperation power limits to use [W]
+  // …at 20 °C & higher:
   unsigned int max_drive_power;
   unsigned int max_recup_power;
+  // …at zero °C:
+  unsigned int max_drive_power_0c;
+  unsigned int max_recup_power_0c;
 
   // Drive power cutback [%]:
   // (100% at FULL → 100% at <SOC1>% → <LVL2>% at <SOC2>% → 0% at EMPTY)
@@ -244,9 +251,14 @@ public:
     // Configuration variables:
     
     max_charge_current = MAX_CHARGE_CURRENT;
-
+    
+    max_charge_current_0c = MAX_CHARGE_CURRENT_0C;
+    
     max_drive_power = MAX_DRIVE_POWER;
     max_recup_power = MAX_RECUP_POWER;
+
+    max_drive_power_0c = MAX_DRIVE_POWER_0C;
+    max_recup_power_0c = MAX_RECUP_POWER_0C;
 
     drv_cutback_soc1 = DRV_CUTBACK_SOC1;
     drv_cutback_soc2 = DRV_CUTBACK_SOC2;
@@ -1048,6 +1060,17 @@ public:
         recpwr /= 2;
         chgcur = min(chgcur, 5);
       }
+      else if (min(temp_f, temp_r) < 20) {
+        // reduce power levels linear by temperature:
+        float dt = 20 - min(temp_f, temp_r);
+        float dy;
+        dy = (max_drive_power - max_drive_power_0c) / 20;
+        drvpwr -= dt * dy;
+        dy = (max_recup_power - max_recup_power_0c) / 20;
+        recpwr -= dt * dy;
+        dy = (max_charge_current - max_charge_current_0c) / 20;
+        chgcur -= dt * dy;
+      }
       
     #endif // CALIBRATION_MODE
 
@@ -1150,6 +1173,12 @@ public:
         max_charge_current = constrain(atoi(arg), 5, 35);
       }
     }
+    else if (strcasecmp(cmd, "mcc0") == 0) {
+      // mcc0 <cur>
+      if (arg = strtok(NULL, " ")) {
+        max_charge_current_0c = constrain(atoi(arg), 5, 35);
+      }
+    }
     
     else if (strcasecmp(cmd, "sc") == 0) {
       // sc [<prc>]
@@ -1162,12 +1191,21 @@ public:
     }
     
     else if (strcasecmp(cmd, "mpw") == 0) {
-      // mpw <drv> <rec>
+      // mpw <drv> <rec> <drv0c> <rec0c>
       if (arg = strtok(NULL, " ")) {
         max_drive_power = constrain(atoi(arg), 500, 30000);
       }
       if (arg = strtok(NULL, " ")) {
         max_recup_power = constrain(atoi(arg), 500, 30000);
+      }
+    }
+    else if (strcasecmp(cmd, "mpw0") == 0) {
+      // mpw0 <drv> <rec>
+      if (arg = strtok(NULL, " ")) {
+        max_drive_power_0c = constrain(atoi(arg), 500, 30000);
+      }
+      if (arg = strtok(NULL, " ")) {
+        max_recup_power_0c = constrain(atoi(arg), 500, 30000);
       }
     }
     
@@ -1249,9 +1287,11 @@ public:
         s->println(F("HELP:\r\n"
           " soh <prc> -- set SOH%\r\n"
           " soc <prc> -- set SOC%\r\n"
-          " mcc <cur> -- set max charge current\r\n"
+          " mcc <cur> -- set max charge current @ 20°C\r\n"
+          " mcc0 <cur> -- set max charge current @ 0°C\r\n"
           " sc [<prc>] -- stop charge / set stop SOC\r\n"
-          " mpw <drv> <rec> -- set max power\r\n"
+          " mpw <drv> <rec> -- set max power @ 20°C\r\n"
+          " mpw0 <drv> <rec> -- set max power @ 0°C\r\n"
           " dcb <soc1> <soc2> <lvl2> -- set drive cutback\r\n"
           " vrd <min> <max> -- set voltage range discharging\r\n"
           " vrc <min> <max> -- set voltage range charging\r\n"
@@ -1279,9 +1319,12 @@ public:
       s->println();
       
       s->print(F("- MCC    = ")); s->println(max_charge_current);
+      s->print(F("- MCC0   = ")); s->println(max_charge_current_0c);
       s->print(F("- SC     = ")); s->println(chg_stop_soc);
       s->print(F("- MPW    = ")); s->print(max_drive_power);
         s->print(' '); s->println(max_recup_power);
+      s->print(F("- MPW0   = ")); s->print(max_drive_power_0c);
+        s->print(' '); s->println(max_recup_power_0c);
       s->print(F("- DCB    = ")); s->print(drv_cutback_soc1);
         s->print(' '); s->print(drv_cutback_soc2);
         s->print(' '); s->println(drv_cutback_lvl2);

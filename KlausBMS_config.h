@@ -49,8 +49,12 @@
 // OPERATION
 // --------------------------------------------------------------------------
 
-// Maximum charge current to use [A] (5…35):
-#define MAX_CHARGE_CURRENT 35
+// Maximum charge current to use [A] (5…35)
+// …at 20 °C and higher:
+#define MAX_CHARGE_CURRENT      35
+// …at 0 °C:
+#define MAX_CHARGE_CURRENT_0C   20
+
 // Charge current → power drawn from socket:
 // 35 A = 2,2 kW
 // 30 A = 2,1 kW
@@ -60,9 +64,13 @@
 // 10 A = 0,7 kW
 //  5 A = 0,4 kW
 
-// Maximum driving & recuperation power limits to use [W] (500…30000):
-#define MAX_DRIVE_POWER 25000
-#define MAX_RECUP_POWER 12500
+// Maximum driving & recuperation power limits to use [W] (500…30000)
+// …at 20 °C and higher:
+#define MAX_DRIVE_POWER       25000
+#define MAX_RECUP_POWER       12500
+// …at 0 °C:
+#define MAX_DRIVE_POWER_0C    16000
+#define MAX_RECUP_POWER_0C     6000
 
 
 // Drive power cutback [%]:

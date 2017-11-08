@@ -97,9 +97,11 @@ After sending any command, the KlausBMS will respond with the current configurat
 | --- | --- |
 | `soh <prc>` | set SOH% |
 | `soc <prc>` | set SOC% |
-| `mcc <cur>` | set max charge current |
+| `mcc <cur>` | set max charge current at 20 °C |
+| `mcc0 <cur>` | set max charge current at 0 °C |
 | `sc [<prc>]` | stop charge / set charge stop SOC |
-| `mpw <drv> <rec>` | set max power |
+| `mpw <drv> <rec>` | set max power at 20 °C |
+| `mpw0 <drv> <rec>` | set max power at 0 °C |
 | `dcb <soc1> <soc2> <lvl2>` | set drive cutback |
 | `vrd <min> <max>` | set voltage range discharging |
 | `vrc <min> <max>` | set voltage range charging |
